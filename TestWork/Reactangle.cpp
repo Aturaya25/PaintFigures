@@ -8,8 +8,6 @@ Reactangle::Reactangle(const QPointF& startPos) : startPos(startPos)
 void Reactangle::draw(QPainter& painter) const
 {
     QRectF squareRect(startPos, currentPos);
-    //painter.setRenderHint(QPainter::Antialiasing, true);
-    //painter.setPen(Qt::black);
     painter.setBrush(Qt::yellow);
     painter.drawRect(squareRect);
 }

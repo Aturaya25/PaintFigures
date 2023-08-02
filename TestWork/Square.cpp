@@ -7,16 +7,25 @@ Square::Square(const QPointF& center, qreal sideLength) : center(center), sideLe
 
 }
 
-void Square::draw(QPainter& painter) const
+QRectF Square::calculateSquareRect() const
 {
     qreal halfSide = sideLength / 2.0;
     QPointF topLeft(center.x() - halfSide, center.y() - halfSide);
-    QRectF squareRect(topLeft, QSizeF(sideLength, sideLength));
+    return QRectF(topLeft, QSizeF(sideLength, sideLength));
+}
 
-    //painter.setRenderHint(QPainter::Antialiasing, true);
-    //painter.setPen(Qt::black);
+void Square::draw(QPainter& painter) const
+{
+    QRectF squareRect = calculateSquareRect();
     painter.setBrush(Qt::blue);
     painter.drawRect(squareRect);
+}
+
+bool Square::contains(const QPoint& point) const
+{
+    QRectF squareRect = calculateSquareRect();
+    // ѕроверка, находитс€ ли точка внутри квадрата
+    return squareRect.contains(point);
 }
 
 void Square::updateParametrs(int count, ...)
