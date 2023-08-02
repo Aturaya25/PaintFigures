@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/TestWork">
+        <file>plus.png</file>
+        <file>square.png</file>
+        <file>rectangle.png</file>
+        <file>triangle.png</file>
+        <file>dot.png</file>
+    </qresource>
+</RCC>
