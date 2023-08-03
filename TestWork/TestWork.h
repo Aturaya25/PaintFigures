@@ -29,9 +29,6 @@ public:
         CircleCreation
     };
 
-    void setMode(Mode mode);
-    void clearAllShapes();
-
 private slots:
     void modifyEnabled(bool checked);
     void squareEnabled(bool checked);
@@ -49,7 +46,7 @@ protected:
 
 
 private:
-    Ui::TestWorkClass ui;
+    Ui::TestWorkClass *ui;
     QAction *modifyAction = new QAction(this);
     QAction *squareAction = new QAction(this);
     QAction *rectangleAction = new QAction(this);
@@ -57,18 +54,17 @@ private:
     QAction* dotAction = new QAction(this);
 
     bool ctrlPressed;
-    bool drawingRect;
-    QPoint rectStartPos;
-    QPoint centerPoint;
-    bool drawingSquare;
-    QRect selectionRect;
+
+    void clearSelectedShapes();
 
     std::vector<std::shared_ptr<Figure>> shapes;
+    std::list<std::shared_ptr<Figure>> selectedShapes;
     Mode currentMode = Selection;
-    QPointF startPressPos;
-    QPointF currentPos;
+    QPoint startPressPos;
+    QPoint currentPos;
     std::shared_ptr<Figure> currentShape;
-    Figure* stupidPointer;
-    bool drawingRectangle = false;
     int triangePointCount = 0;
+    bool selected_any = false;
+    bool isRotationShapes = false;
+    QRect selection_rect_;
 };
