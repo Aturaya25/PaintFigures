@@ -1,62 +1,50 @@
 #include "Triangle.h"
 
-Triangle::Triangle(const QPoint& startPoint) : startPoint(startPoint)
+Triangle::Triangle(const QPoint& startPoint, QWidget* parent) :Figure(startPoint, parent), startPoint(mainPoint)
 {
-	initPointCount = 1;
+    initPointCount = 1;
     secondPoint = startPoint;
 }
 
-void Triangle::draw(QPainter& painter) const
+void Triangle::draw() const
 {
+    auto painter = getPainter();
     if (initPointCount == 1) {
-        painter.drawLine(startPoint, secondPoint);
+        painter->drawLine(startPoint, secondPoint);
     }
     else if (initPointCount == 2) {
-        painter.drawLine(startPoint, secondPoint);
-        painter.drawLine(secondPoint, thirdPoint);
+        painter->drawLine(startPoint, secondPoint);
+        painter->drawLine(secondPoint, thirdPoint);
     }
     else if (initPointCount == 3) {
-        painter.setBrush(color);
+        painter->setBrush(color);
         QPolygon polygon;
         polygon << startPoint << secondPoint << thirdPoint;
+        if (_angle != 0) {
+            painter->translate(this->center());
+            painter->rotate(_angle);
+            painter->translate(-this->center());
+        }
 
-        painter.drawPolygon(polygon);
+        painter->drawPolygon(polygon);
     }
 }
 
-void Triangle::updateParametrs(int count, ...)
-{
-    va_list args;
-    va_start(args, count);
-    int x = va_arg(args, int);
-    int y = va_arg(args, int);
-    if (initPointCount == 1) {
-        secondPoint = QPoint(x, y);
-        thirdPoint = secondPoint;
-    }
-    else if (initPointCount == 2) {
-        thirdPoint = QPoint(x, y);
-    }
-    va_end(args);
-}
 
 bool Triangle::contains(const QPoint& point) const
 {
-    // Вычисляем барицентрические координаты для заданной точки point
-    qreal u = ((secondPoint.y() - thirdPoint.y()) * (point.x() - thirdPoint.x()) +
-        (thirdPoint.x() - secondPoint.x()) * (point.y() - thirdPoint.y())) /
-        ((secondPoint.y() - thirdPoint.y()) * (startPoint.x() - thirdPoint.x()) +
-            (thirdPoint.x() - secondPoint.x()) * (startPoint.y() - thirdPoint.y()));
-
-    qreal v = ((thirdPoint.y() - startPoint.y()) * (point.x() - thirdPoint.x()) +
-        (startPoint.x() - thirdPoint.x()) * (point.y() - thirdPoint.y())) /
-        ((secondPoint.y() - thirdPoint.y()) * (startPoint.x() - thirdPoint.x()) +
-            (thirdPoint.x() - secondPoint.x()) * (startPoint.y() - thirdPoint.y()));
-
-    qreal w = 1.0 - u - v;
-
-    // Проверяем, что условия для барицентрических координат выполняются
-    return (u >= 0 && v >= 0 && w >= 0 && u <= 1 && v <= 1 && w <= 1);
+    double x0 = point.x();
+    double y0 = point.y();
+    double x1 = startPoint.x();
+    double y1 = startPoint.y();
+    double x2 = secondPoint.x();
+    double y2 = secondPoint.y();
+    double x3 = thirdPoint.x();
+    double y3 = thirdPoint.y();
+    double s1 = (x1 - x0) * (y2 - y1) - (x2 - x1) * (y1 - y0);
+    double s2 = (x2 - x0) * (y3 - y2) - (x3 - x2) * (y2 - y0);
+    double s3 = (x3 - x0) * (y1 - y3) - (x1 - x3) * (y3 - y0);
+    return (s1 < 0 && s2 < 0 && s3 < 0) || (s1 >= 0 && s2 >= 0 && s3 >= 0);
 }
 
 void Triangle::updatePosition(const QPoint& position)
@@ -66,9 +54,19 @@ void Triangle::updatePosition(const QPoint& position)
     startPoint = position + delta;
 }
 
-double Triangle::calculateAngle(const QPoint& start, const QPoint& end) const
-{
-    return 0.0;
+QPoint Triangle::center() const {
+    QPointF _center;
+
+    QLineF l1(startPoint, secondPoint);
+    QLineF l2(secondPoint, thirdPoint);
+    QLineF l3(thirdPoint, startPoint);
+
+    QLineF m1(startPoint, l2.center());
+    QLineF m2(secondPoint, l3.center());
+
+
+    m1.intersect(m2, &_center);
+    return _center.toPoint();
 }
 
 QPoint Triangle::position()
@@ -76,8 +74,23 @@ QPoint Triangle::position()
     return startPoint;
 }
 
-void Triangle::rotate(double angle)
+void Triangle::updateShapeParametrs(const QPoint& point)
 {
+    if (initPointCount == 1) {
+        secondPoint = point;
+        thirdPoint = secondPoint;
+    }
+    else if (initPointCount == 2) {
+        thirdPoint = point;
+    }
+}
+
+bool Triangle::isIntersectSelection(const QRect& rect) const
+{
+    auto c = center();
+    bool angleInCircle = contains(rect.topLeft()) || contains(rect.topRight()) || contains(rect.bottomLeft()) || contains(rect.bottomRight());
+    bool circleCenterInRect = rect.contains(c);
+    return angleInCircle || circleCenterInRect || rect.contains(startPoint) || rect.contains(secondPoint) || rect.contains(thirdPoint);
 }
 
 void Triangle::updatePointCount()

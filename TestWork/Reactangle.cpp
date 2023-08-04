@@ -1,25 +1,20 @@
 #include "reactangle.h"
-
-Reactangle::Reactangle(const QPoint& startPos) : startPos(startPos)
+Reactangle::Reactangle(const QPoint& startPos, QWidget* parent) :Figure(startPos, parent), startPos(mainPoint)
 {
     currentPos = startPos;
 }
 
-void Reactangle::draw(QPainter& painter) const
+void Reactangle::draw() const
 {
+    auto painter = getPainter();
     QRect squareRect(startPos, currentPos);
-    painter.setBrush(color);
-    painter.drawRect(squareRect);
-}
-
-void Reactangle::updateParametrs(int count, ...)
-{
-    va_list args;
-    va_start(args, count);
-    int x = va_arg(args, int);
-    int y = va_arg(args, int);
-    currentPos = QPoint(x,y);
-    va_end(args);
+    painter->setBrush(color);
+    if (_angle != 0) {
+        painter->translate(squareRect.center());
+        painter->rotate(_angle);
+        painter->translate(-squareRect.center());
+    }
+    painter->drawRect(squareRect);
 }
 
 bool Reactangle::contains(const QPoint& point) const
@@ -34,9 +29,10 @@ void Reactangle::updatePosition(const QPoint& position)
     startPos = position + delta;
 }
 
-double Reactangle::calculateAngle(const QPoint& start, const QPoint& end) const
+QPoint Reactangle::center() const
 {
-    return 0.0;
+    QLineF diag(currentPos, startPos);
+    return diag.center().toPoint();
 }
 
 QPoint Reactangle::position()
@@ -44,6 +40,13 @@ QPoint Reactangle::position()
     return startPos;
 }
 
-void Reactangle::rotate(double angle)
+void Reactangle::updateShapeParametrs(const QPoint& point)
 {
+    currentPos = point;
+}
+
+bool Reactangle::isIntersectSelection(const QRect& rect) const
+{
+    QRect squareRect(startPos, currentPos);
+    return rect.intersects(squareRect);
 }

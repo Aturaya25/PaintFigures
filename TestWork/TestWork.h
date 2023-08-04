@@ -54,11 +54,16 @@ private:
     QAction* dotAction = new QAction(this);
 
     bool ctrlPressed;
+    QPoint rectStartPos;
+    QPoint centerPoint;
+    QRect selectionRect;
 
     void clearSelectedShapes();
 
-    std::vector<std::shared_ptr<Figure>> shapes;
+    std::list<std::shared_ptr<Figure>> shapes;
     std::list<std::shared_ptr<Figure>> selectedShapes;
+    std::list<std::shared_ptr<Figure>> cloneShapes;
+    std::list<std::shared_ptr<Figure>> rotatedShapes;
     Mode currentMode = Selection;
     QPoint startPressPos;
     QPoint currentPos;

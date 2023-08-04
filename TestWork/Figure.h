@@ -8,23 +8,37 @@
 #include <vector>
 #include <tuple>
 #include <memory>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 
 class Figure : public QWidget
 {
 public:
     Figure() {};
+    Figure(QPoint point, QWidget* parent = nullptr);;
     virtual ~Figure() {};
-    virtual void draw(QPainter& painter) const = 0;
-    virtual void updateParametrs(int count, ...) = 0;
+    virtual void draw() const = 0;
+    virtual void updateParametrs(int count, ...);
     virtual bool contains(const QPoint& point) const = 0;
     virtual void updatePosition(const QPoint& position) = 0;
-    virtual double calculateAngle(const QPoint& start, const QPoint& end) const = 0;
-    virtual void rotate(double angle) = 0;
+    virtual double calculateAngle(const QPoint& start, const QPoint& end) const;
     virtual QPoint position() = 0;
+    virtual QPoint center() const = 0;
+    virtual bool isIntersectSelection(const QRect& rect) const = 0;
+    virtual void updateShapeParametrs(const QPoint& point) = 0;
     void setSelected(bool isChecked);
     QColor color = Qt::gray;
-    bool _isSelected = false;
+    bool isSelected();
     QPoint delta{ 0,0 };
+    QPoint mainPoint{ 0,0 };
+    double _angle = 0;
+    std::unique_ptr<QPainter> getPainter() const;
+
+private:
+    bool _isSelected = false;
+
 };
 
 #endif // FIGURE_H

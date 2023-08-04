@@ -2,7 +2,12 @@
 #include <iostream>
 #include <QDebug>
 
-Square::Square(const QPoint& center) : center(center), sideLength(0)
+Square::Square(const QPoint& center) :Figure(center), _center(mainPoint), sideLength(0)
+{
+
+}
+
+Square::Square(const QPoint& center, QWidget* parent) : Figure(center, parent), _center(mainPoint), sideLength(0)
 {
 
 }
@@ -10,15 +15,21 @@ Square::Square(const QPoint& center) : center(center), sideLength(0)
 QRect Square::calculateSquareRect() const
 {
     qreal halfSide = sideLength / 2.0;
-    QPoint topLeft(center.x() - halfSide, center.y() - halfSide);
+    QPoint topLeft(_center.x() - halfSide, _center.y() - halfSide);
     return QRect(topLeft, QSize(sideLength, sideLength));
 }
 
-void Square::draw(QPainter& painter) const
+void Square::draw() const
 {
+    auto painter = getPainter();
     QRect squareRect = calculateSquareRect();
-    painter.setBrush(color);
-    painter.drawRect(squareRect);
+    if (_angle != 0) {
+        painter->translate(squareRect.center());
+        painter->rotate(_angle);
+        painter->translate(-squareRect.center());
+    }
+    painter->setBrush(color);
+    painter->drawRect(squareRect);
 }
 
 bool Square::contains(const QPoint& point) const
@@ -27,59 +38,30 @@ bool Square::contains(const QPoint& point) const
     return squareRect.contains(point);
 }
 
-void Square::updateParametrs(int count, ...)
+QPoint Square::center() const
 {
-    va_list args;
-    va_start(args, count);
-    int x = va_arg(args, int);
-    int y = va_arg(args, int);
-    this->sideLength = qMax(qAbs(x - center.x()), qAbs(y - center.y())) * 2;
-    va_end(args);
+    return _center;
 }
 
-double Square::calculateAngle(const QPoint& start, const QPoint& end) const
+void Square::updateShapeParametrs(const QPoint& point)
 {
-    // Вычисляем разницу координат между центром и точками начала и конца
-    double startX = start.x() - center.x();
-    double startY = start.y() - center.y();
-    double endX = end.x() - center.x();
-    double endY = end.y() - center.y();
-
-    // Вычисляем арктангенс отношения координат
-    double startAngle = std::atan2(startY, startX);
-    double endAngle = std::atan2(endY, endX);
-
-    // Вычисляем разницу углов, чтобы получить угол поворота
-    double angle = endAngle - startAngle;
-
-    return angle;
+    this->sideLength = qMax(qAbs(point.x() - _center.x()), qAbs(point.y() - _center.y())) * 2;
 }
 
-void Square::rotate(double angle)
+bool Square::isIntersectSelection(const QRect& rect) const
 {
-    QRect rect = calculateSquareRect();
-    // Вычисляем разницу координат между центром и вершинами квадрата
-    double dx = center.x() - this->center.x();
-    double dy = center.y() - this->center.y();
-
-    // Поворачиваем вершины квадрата относительно его центра
-    double newTopLeftX = dx + (rect.topLeft().x() - center.x()) * std::cos(angle) - (rect.topLeft().y() - center.y()) * std::sin(angle);
-    double newTopLeftY = dy + (rect.topLeft().x() - center.x()) * std::sin(angle) + (rect.topLeft().y() - center.y()) * std::cos(angle);
-    double newSideLength = sideLength;
-
-    // Обновляем новые координаты вершин квадрата
-    rect.topLeft() = QPoint(newTopLeftX, newTopLeftY);
-    sideLength = newSideLength;
+    QRect squareRect = calculateSquareRect();
+    return rect.intersects(squareRect);
 }
 
 void Square::updatePosition(const QPoint& position)
 {
-    center = position + delta;
+    _center = position + delta;
 }
 
 QPoint Square::position()
 {
-    return center;
+    return _center;
 }
 
 Square::~Square()

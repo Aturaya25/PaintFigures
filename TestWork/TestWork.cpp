@@ -59,7 +59,7 @@ void TestWork::triangleEnabled(bool checked)
 {
     currentMode = TriangleCreation;
     this->setMouseTracking(true);
-    //ui->centralwidget->setMouseTracking(true);
+    ui->centralWidget->setMouseTracking(true);
     currentShape = nullptr;
 }
 
@@ -80,7 +80,7 @@ void TestWork::mousePressEvent(QMouseEvent* event)
                 auto shape = *it;
                 if (shape->contains(startPressPos)) {
                     currentShape = shape;
-                    if (!shape->_isSelected) {
+                    if (!shape->isSelected()) {
                         if (!ctrlPressed) {
                             clearSelectedShapes();
                         }
@@ -97,34 +97,39 @@ void TestWork::mousePressEvent(QMouseEvent* event)
                 shape->setSelected(true);
                 shape->delta = shape->position() - startPressPos;
             }
-            if (!selectedShapes.empty()) {
+            if (!selectedShapes.empty() && !ctrlPressed) {
                 selected_any = false;
             }
             else {
                 selected_any = true;
                 selection_rect_.setTopLeft(event->pos());
                 selection_rect_.setBottomRight(event->pos());
-                for (auto shape : selectedShapes) {
-                    shape->setSelected(false);
+                if (!ctrlPressed){
+                    for (auto shape : selectedShapes) {
+                        shape->setSelected(false);
+                    }
                 }
             }
             update();
         }
+        else {
+            this->clearSelectedShapes();
+        }
         if (currentMode == SquareCreation) {
             currentPos = startPressPos;
             QPoint center = (currentPos + startPressPos) / 2.0;
-            currentShape = std::make_shared<Square>(center);
+            currentShape = std::make_shared<Square>(center, this);
             shapes.push_back(currentShape);
             update();
         }
         if (currentMode == RectangleCreation) {
-            currentShape = std::make_shared<Reactangle>(startPressPos);
+            currentShape = std::make_shared<Reactangle>(startPressPos, this);
             shapes.push_back(currentShape);
             update();
         }
         if (currentMode == TriangleCreation) {
             if (triangePointCount == 0) {
-                currentShape = std::make_shared<Triangle>(startPressPos);
+                currentShape = std::make_shared<Triangle>(startPressPos, this);
                 shapes.push_back(currentShape);
                 triangePointCount++;
             }
@@ -140,28 +145,17 @@ void TestWork::mousePressEvent(QMouseEvent* event)
             }
         }
         if (currentMode == CircleCreation) {
-            currentShape = std::make_shared<Circle>(startPressPos);
+            currentShape = std::make_shared<Circle>(startPressPos, this);
             shapes.push_back(currentShape);
             update();
         }
     }
     if (event->button() == Qt::RightButton) {
-        if (!shapes.empty()) {
-            startPressPos = event->pos();
-            bool inSelectedShape = false;
-            for (auto it = shapes.rbegin(); it != shapes.rend(); it++) {
-                auto shape = *it;
-                if (shape->contains(startPressPos)) {
-                    if (shape->_isSelected) {
-                        inSelectedShape = true;
-                        break;
-                    }
-                }
+        rotatedShapes.clear();
+        if (!selectedShapes.empty()) {
+            for (auto shape : selectedShapes) {
+                rotatedShapes.push_back(shape);
             }
-            isRotationShapes = (inSelectedShape) ? true : false;
-        }
-        else {
-            isRotationShapes = false;
         }
     }
 }
@@ -176,22 +170,25 @@ void TestWork::mouseMoveEvent(QMouseEvent* event)
     }
     if (currentMode == Selection) {
         if (event->buttons() & Qt::LeftButton) {
-            if (selected_any)
+            if (selected_any )
             {
                 selection_rect_.setBottomRight(event->pos());
             }
-            for (auto shape : selectedShapes) {
-                shape->updatePosition(event->pos());
+            else {
+
+                for (auto shape : selectedShapes) {
+                    shape->updatePosition(event->pos());
+                }
             }
             update();
         }
-    }
-    if (event->buttons() & Qt::RightButton){
-        if (isRotationShapes) {
-            QPoint currentPos = event->pos();
-            for (auto shape : selectedShapes) {
-                double angle = shape->calculateAngle(startPressPos, currentPos);
-                shape->rotate(angle);
+        if (event->buttons() & Qt::RightButton) {
+            if (!rotatedShapes.empty()) {
+                for (auto shape : rotatedShapes) {
+                    double angle = shape->calculateAngle(startPressPos, currentPos);
+                    shape->updateParametrs(1, angle);
+                }
+                update();
             }
         }
     }
@@ -206,6 +203,8 @@ void TestWork::mouseReleaseEvent(QMouseEvent* event)
         update();
     }
     else if (event->button() == Qt::RightButton) {
+        isRotationShapes = false;
+        rotatedShapes.clear();
         startPressPos = QPoint();
         update();
     }
@@ -213,7 +212,7 @@ void TestWork::mouseReleaseEvent(QMouseEvent* event)
         if (selected_any) {
             for (auto shape : shapes)
             {
-                if (shape->_isSelected || shape->contains(selection_rect_.topLeft()) || shape->contains(selection_rect_.bottomRight()))
+                if (shape->isSelected() || shape->contains(selection_rect_.topLeft()) || shape->contains(selection_rect_.bottomRight()))
                 {
                     shape->setSelected(true);
                 }
@@ -232,7 +231,7 @@ void TestWork::keyPressEvent(QKeyEvent* event)
     }
     if (event->key() == Qt::Key_D) {
         for (auto it = shapes.begin(); it != shapes.end(); ) {
-            if ((*it)->_isSelected) {
+            if ((*it)->isSelected()) {
                 it = shapes.erase(it);
             }
             else {
@@ -241,8 +240,6 @@ void TestWork::keyPressEvent(QKeyEvent* event)
         }
         update();
     }
-
-    //QMainWindow::keyPressEvent(event);
 }
 
 void TestWork::keyReleaseEvent(QKeyEvent* event)
@@ -251,30 +248,38 @@ void TestWork::keyReleaseEvent(QKeyEvent* event)
     {
         ctrlPressed = false;
     }
-
-    //QMainWindow::keyReleaseEvent(event);
 }
 
 void TestWork::paintEvent(QPaintEvent* event)
 {
     Q_UNUSED(event);
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing, true);
-    painter.setPen(Qt::black);
-
     for (const auto& shape : shapes) {
         if (shape != nullptr)
-            shape->draw(painter);
+            shape->draw();
     }
     if (selected_any)
     {
-        painter.setPen(Qt::DashLine);
+        QPainter painter2(this);
+        painter2.setRenderHint(QPainter::Antialiasing, true);
+        painter2.setPen(Qt::DashLine);
         QColor selectionColor(Qt::blue);
         selectionColor.setAlpha(100);
-        painter.setBrush(selectionColor);
-        painter.drawRect(selection_rect_);
+        painter2.setBrush(selectionColor);
+        painter2.drawRect(selection_rect_);
+        painter2.end();
+        for (auto shape : shapes) {
+            if (shape->isIntersectSelection(selection_rect_)) {
+                shape->setSelected(true);
+                selectedShapes.push_back(shape);
+            }
+            else {
+                if (shape->isSelected() && !ctrlPressed) {
+                    selectedShapes.remove(shape);
+                    shape->setSelected(false);
+                }
+            }
+        }
     }
-    painter.end();
 }
 
 void TestWork::clearSelectedShapes()

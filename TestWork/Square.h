@@ -8,20 +8,20 @@ class Square : public Figure
 {
 public:
     Square(const QPoint& center);
-    void draw(QPainter& painter) const override;
+    Square(const QPoint& center, QWidget* parent = nullptr);
+    void draw() const override;
     bool contains(const QPoint& point) const override;
     void updatePosition(const QPoint& position) override;
     QPoint position() override;
-    void updateParametrs(int count, ...) override;
-    double calculateAngle(const QPoint& start, const QPoint& end) const override;
-    void rotate(double angle) override;
+    QPoint center() const override;
+    void updateShapeParametrs(const QPoint& point) override;
+    bool isIntersectSelection(const QRect& rect) const override;
     ~Square();
 
 private:
     QRect calculateSquareRect() const;
-    QPoint center; // Центр квадрата
-    qreal sideLength = 0; // Длина стороны квадрата
-    QRect _squareRect;
+    QPoint _center;
+    qreal sideLength = 0;
 };
 
 #endif // SQUARE_H
