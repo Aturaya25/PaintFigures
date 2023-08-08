@@ -1,4 +1,5 @@
 #include "Triangle.h"
+#include <qset.h>
 
 Triangle::Triangle(const QPoint& startPoint, QWidget* parent) :Figure(startPoint, parent), startPoint(mainPoint)
 {
@@ -64,7 +65,6 @@ QPoint Triangle::center() const {
     QLineF m1(startPoint, l2.center());
     QLineF m2(secondPoint, l3.center());
 
-
     m1.intersect(m2, &_center);
     return _center.toPoint();
 }
@@ -88,9 +88,24 @@ void Triangle::updateShapeParametrs(const QPoint& point)
 bool Triangle::isIntersectSelection(const QRect& rect) const
 {
     auto c = center();
-    bool angleInCircle = contains(rect.topLeft()) || contains(rect.topRight()) || contains(rect.bottomLeft()) || contains(rect.bottomRight());
+    bool angleInTriangle = contains(rect.topLeft()) || contains(rect.topRight()) || contains(rect.bottomLeft()) || contains(rect.bottomRight());
     bool circleCenterInRect = rect.contains(c);
-    return angleInCircle || circleCenterInRect || rect.contains(startPoint) || rect.contains(secondPoint) || rect.contains(thirdPoint);
+    return angleInTriangle || circleCenterInRect || rect.contains(startPoint) || rect.contains(secondPoint) || rect.contains(thirdPoint);
+}
+
+int Triangle::getType() const
+{
+    return TRIANGLETYPE;
+}
+
+void Triangle::serialize(QDataStream& out) const
+{
+    out << initPointCount << startPoint << secondPoint << thirdPoint << _angle << selectedColor;
+}
+
+void Triangle::deserialize(QDataStream& in)
+{
+    in >> initPointCount >> startPoint >> secondPoint >> thirdPoint >> _angle >> selectedColor;
 }
 
 void Triangle::updatePointCount()

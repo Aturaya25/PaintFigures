@@ -1,4 +1,6 @@
-#include "Figure.h"
+#include "figure.h"
+#include <cstdarg>
+
 Figure::Figure(QPoint point, QWidget* parent) :QWidget(parent), mainPoint(point)
 {
 
@@ -30,28 +32,28 @@ double Figure::calculateAngle(const QPoint& start, const QPoint& end) const
     double startY = start.y() - _center.y();
     double endX = end.x() - _center.x();
     double endY = end.y() - _center.y();
-
     double startAngle = std::atan2(startY, startX);
     double endAngle = std::atan2(endY, endX);
-
     double angle = endAngle - startAngle;
-
-    // Переводим угол из радиан в градусы
     double angleInDegrees = angle * (180.0 / M_PI);
-
     return angleInDegrees;
 }
 
 void Figure::setSelected(bool isChecked)
 {
     if (isChecked) {
-        color = QColor("#b3ffe5");
+        color = QColor("#bdfffb");
         _isSelected = true;
     }
     else {
-        color = Qt::gray;
+        color = selectedColor;
         _isSelected = false;
     }
+}
+
+void Figure::setColor(QColor _color)
+{
+    selectedColor = _color;
 }
 
 bool Figure::isSelected()
@@ -65,4 +67,3 @@ std::unique_ptr<QPainter> Figure::getPainter() const {
     p->setPen(Qt::black);
     return p;
 }
-

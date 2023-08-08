@@ -5,5 +5,6 @@
         <file>rectangle.png</file>
         <file>triangle.png</file>
         <file>dot.png</file>
+        <file>polygon.png</file>
     </qresource>
 </RCC>

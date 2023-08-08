@@ -1,4 +1,3 @@
-#include "Circle.h"
 #include "circle.h"
 
 Circle::Circle(const QPoint& startPos, QWidget* parent) : Figure(startPos, parent), startPos(mainPoint)
@@ -13,21 +12,6 @@ void Circle::draw() const
         painter->drawEllipse(startPos, radius, radius);
     }
 }
-
-//void Circle::updateParametrs(int count, ...)
-//{
-//    va_list args;
-//    va_start(args, count);
-//    if (count == 1){
-//        va_end(args);
-//        return;
-//    }
-//    int x = va_arg(args, int);
-//    int y = va_arg(args, int);
-//    QPoint currentPos = { x,y };
-//    radius = QLineF(startPos, currentPos).length();
-//    va_end(args);
-//}
 
 void Circle::updateShapeParametrs(const QPoint& point)
 {
@@ -61,13 +45,23 @@ bool Circle::isIntersectSelection(const QRect& rect) const
     auto c = center();
     bool angleInCircle = contains(rect.topLeft()) || contains(rect.topRight()) || contains(rect.bottomLeft()) || contains(rect.bottomRight());
     bool circleCenterInRect = rect.contains(c);
-
-
     QPainterPath ppp;
     ppp.addEllipse(startPos, radius, radius);
-
     ppp.intersects(rect);
+    return angleInCircle || circleCenterInRect || ppp.intersects(rect);
+}
 
+int Circle::getType() const
+{
+    return CIRCLETYPE;
+}
 
-    return angleInCircle || circleCenterInRect || ppp.intersects(rect);;
+void Circle::serialize(QDataStream& out) const
+{
+    out << startPos << radius << selectedColor;
+}
+
+void Circle::deserialize(QDataStream& in)
+{
+    in >> startPos >> radius >> selectedColor;
 }

@@ -50,3 +50,18 @@ bool Reactangle::isIntersectSelection(const QRect& rect) const
     QRect squareRect(startPos, currentPos);
     return rect.intersects(squareRect);
 }
+
+int Reactangle::getType() const
+{
+    return REACTANGLETYPE;
+}
+
+void Reactangle::serialize(QDataStream& out) const
+{
+    out << startPos << currentPos << _angle << selectedColor;
+}
+
+void Reactangle::deserialize(QDataStream& in)
+{
+    in >> startPos >> currentPos >> _angle >> selectedColor;
+}

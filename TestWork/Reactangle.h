@@ -2,6 +2,8 @@
 #define REACTANGLE_H
 #include "figure.h"
 
+#define REACTANGLETYPE 2
+
 class Reactangle : public Figure
 {
 public:
@@ -13,6 +15,9 @@ public:
     QPoint position() override;
     void updateShapeParametrs(const QPoint& point) override;
     bool isIntersectSelection(const QRect& rect) const override;
+    int getType() const override;
+    void serialize(QDataStream& out) const override;
+    void deserialize(QDataStream& in) override;
 
 private:
     QPoint startPos;

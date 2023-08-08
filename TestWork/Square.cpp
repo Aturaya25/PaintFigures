@@ -54,6 +54,21 @@ bool Square::isIntersectSelection(const QRect& rect) const
     return rect.intersects(squareRect);
 }
 
+int Square::getType() const
+{
+    return SQUARETYPE;
+}
+
+void Square::serialize(QDataStream& out) const
+{
+    out << sideLength << _center << _angle << selectedColor;
+}
+
+void Square::deserialize(QDataStream& in)
+{
+    in >> sideLength >> _center >> _angle >> selectedColor;
+}
+
 void Square::updatePosition(const QPoint& position)
 {
     _center = position + delta;

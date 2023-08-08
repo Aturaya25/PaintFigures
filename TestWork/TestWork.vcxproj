@@ -89,6 +89,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Circle.cpp" />
+    <ClCompile Include="Polygon.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <QtRcc Include="TestWork.qrc" />
     <QtUic Include="TestWork.ui" />
@@ -102,6 +103,7 @@
   <ItemGroup>
     <ClInclude Include="Circle.h" />
     <ClInclude Include="Figure.h" />
+    <ClInclude Include="Polygon.h" />
     <ClInclude Include="Reactangle.h" />
     <ClInclude Include="Square.h" />
     <ClInclude Include="Triangle.h" />

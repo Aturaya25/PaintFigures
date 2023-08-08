@@ -1,34 +1,34 @@
-#ifndef SQUARE_H
-#define SQUARE_H
+#pragma once
 #include "figure.h"
-#include <QMainWindow>
-#include <cmath>
 
-#define SQUARETYPE 1
+#define POLYGONTYPE 5
 
-class Square : public Figure
+
+class Polygon : public Figure
 {
 public:
-    Square(const QPoint& center);
-    Square(const QPoint& center, QWidget* parent = nullptr);
+    Polygon(const QPoint& startPos, QWidget* parent);
+
+public:
     void draw() const override;
     bool contains(const QPoint& point) const override;
     void updatePosition(const QPoint& position) override;
     QPoint position() override;
-    //    void updateParametrs(int count, ...) override;
     QPoint center() const override;
-    void updateShapeParametrs(const QPoint& point) override;
     bool isIntersectSelection(const QRect& rect) const override;
+    void updateShapeParametrs(const QPoint& point) override;
+    bool isPolygonInitEnd() const;
+    void setPolygonInitEnd(const bool isEnd);
+    void addPoint(const QPoint p);
     int getType() const override;
     void serialize(QDataStream& out) const override;
     void deserialize(QDataStream& in) override;
-    ~Square();
+
 
 private:
-    QRect calculateSquareRect() const;
-    QPoint _center;
-    qreal sideLength = 0;
+    std::vector<QPoint> polygonPoints;
+    bool endPolygonInit = false;
+    QPoint startPoint;
+    QPoint currentPoint;
 };
-
-#endif // SQUARE_H
 
