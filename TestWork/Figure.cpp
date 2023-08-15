@@ -1,4 +1,5 @@
 #include "figure.h"
+#include <cmath>
 #include <cstdarg>
 
 Figure::Figure(QPoint point, QWidget* parent) :QWidget(parent), mainPoint(point)

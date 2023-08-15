@@ -4,7 +4,7 @@
 
 TestWork::TestWork(QWidget* parent)
     : QMainWindow(parent)
-{
+{ 
     ui = new Ui::TestWorkClass;
     ui->setupUi(this);
     setMinimumSize(800, 600);
